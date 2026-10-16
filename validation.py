@@ -6,9 +6,10 @@ import numpy as np
 import pandas as pd
 from ai_edge_litert.interpreter import Interpreter
 import params
+from preprocessing import preprocess_frame
 
 
-MODEL_PATH = "model_recommended_final_umar.tflite"
+MODEL_PATH = params.model_path
 RUN_DIR = params.validation_run_dir
 BASE_ALPHA = 0.12
 TURN_ALPHA_GAIN = 0.38
@@ -20,11 +21,6 @@ CROP_Y2 = params.crop_y2
 TARGET_COLUMN = params.target_column
 IMAGES_DIRNAME = params.images_dirname
 LABELS_FILENAME = params.labels_filename
-
-
-def preprocess_frame(img):
-    img = img[CROP_Y1:CROP_Y2, :]
-    return cv2.resize(img, (IMG_W, IMG_H))
 
 
 def load_labels(labels_path):

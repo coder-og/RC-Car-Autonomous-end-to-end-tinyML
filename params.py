@@ -1,4 +1,6 @@
 modelname = "pilotnet"
+model_basename = "model_recommended_final_umar"
+model_path = model_basename + ".tflite"
 
 # Match your training preprocessing
 inputres = (68, 68)  # (width, height)
