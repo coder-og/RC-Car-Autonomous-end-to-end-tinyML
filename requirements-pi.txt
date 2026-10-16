@@ -1,0 +1,5 @@
+# Install Picamera2/OpenCV/NumPy using Raspberry Pi OS apt packages.
+pygame>=2.5,<3
+gpiozero>=2,<3
+pigpio>=1.78,<2
+ai-edge-litert>=1,<3

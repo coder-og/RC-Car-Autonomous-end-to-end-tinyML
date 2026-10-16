@@ -216,3 +216,13 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Portable build / local run output
+build/
+build-core/
+target/
+run/
+__pycache__/
+.venv/
+*.vcd
+*.vcxproj.user

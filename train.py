@@ -7,6 +7,7 @@ import pandas as pd
 import tensorflow as tf
 
 import params
+from preprocessing import preprocess_frame
 
 
 IMG_W, IMG_H = params.inputres
@@ -17,17 +18,12 @@ IMAGES_DIRNAME = params.images_dirname
 LABELS_FILENAME = params.labels_filename
 RUN_PREFIX = params.run_prefix
 
-MODEL_BASENAME = "model_recommended_final_umar"
+MODEL_BASENAME = params.model_basename
 ZERO_CONTROL_FRAME_DROP_PERCENT = 100.0
 ZERO_CONTROL_EPSILON = 1e-6
 
 m = __import__(params.modelname)
 model = m.model
-
-
-def preprocess_frame(img):
-    img = img[CROP_Y1:CROP_Y2, :]
-    return cv2.resize(img, (IMG_W, IMG_H))
 
 
 def iter_run_dirs(dataset_root):
@@ -38,6 +34,7 @@ def iter_run_dirs(dataset_root):
         path
         for path in root.iterdir()
         if path.is_dir() and path.name.startswith(RUN_PREFIX)
+        and path.resolve() != Path(params.validation_run_dir).resolve()
     )
 
 
@@ -213,9 +210,12 @@ def load_validation_data(run_dir):
 
 
 def weighted_huber(y_true, y_pred):
-    base = tf.keras.losses.huber(y_true, y_pred, delta=0.1)
-    weights = 1.0 + 5.0 * tf.abs(y_true)
-    return tf.reduce_mean(weights * base)
+    y_true = tf.reshape(tf.cast(y_true, y_pred.dtype), (-1,))
+    y_pred = tf.reshape(y_pred, (-1,))
+    error = tf.abs(y_true - y_pred)
+    delta = tf.cast(0.1, y_pred.dtype)
+    base = tf.where(error <= delta, 0.5 * tf.square(error), delta * (error - 0.5 * delta))
+    return tf.reduce_mean((1.0 + 5.0 * tf.abs(y_true)) * base)
 
 
 def main():

@@ -10,9 +10,10 @@ from gpiozero.pins.pigpio import PiGPIOFactory
 from picamera2 import Picamera2
 
 import params
+from preprocessing import preprocess_frame
 
 
-MODEL_PATH = "model_recommended.tflite"
+MODEL_PATH = params.model_path
 CAMERA_SIZE = (360, 240)
 SERVO_PIN = 18
 MAX_SPEED = 0.4
@@ -26,12 +27,6 @@ TURN_ALPHA_GAIN = 0.38
 STACK_SIZE = 1
 
 os.environ["SDL_AUDIODRIVER"] = "dummy"
-
-
-def preprocess_frame(frame):
-    cropped = frame[params.crop_y1 : params.crop_y2, :]
-    resized = cv2.resize(cropped, (params.inputres[0], params.inputres[1]))
-    return resized
 
 
 def get_adaptive_alpha(raw_steering):
@@ -99,7 +94,9 @@ def main():
                 break
 
             frame = picam2.capture_array()
-            frame = preprocess_frame(frame)
+            # The recorder applies the same swap before saving JPEGs. Keep live
+            # inference consistent with cv2.imread() on those saved images.
+            frame = preprocess_frame(cv2.cvtColor(frame, cv2.COLOR_RGB2BGR))
             frame_buffer.append(frame)
 
             if len(frame_buffer) < STACK_SIZE:
